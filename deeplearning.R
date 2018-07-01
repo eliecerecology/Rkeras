@@ -24,6 +24,7 @@ training <- data[ind==1, 1:21]
 test <- data[ind==2, 1:21]
 dim(training)
 (1523/100)*80
+##########FINAL forrmat
 trainingtarget <- data[ind == 1, 22]
 testtarget <- data[ind == 2, 22]
 
@@ -40,7 +41,10 @@ model %>%
          layer_dense(units = 3, activation = "sigmoid")
 summary(model)
 
+####################
 # Compile
+###################
+
 model %>%
          compile(loss = "categorical_crossentropy",
                  optimizer = "adam",
@@ -56,12 +60,11 @@ history <- model %>%
 plot(history)
 #validation increments respect to training for loss: overfitting
  
-
-
 # Evaluate model with test data
 model1 <- model %>%
          evaluate(test, testLabels)
 
+model1
 #$loss
 #[1] 0.4124508
 #$acc
