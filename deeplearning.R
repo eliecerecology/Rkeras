@@ -4,6 +4,7 @@ rm(list=ls(all=TRUE))
 library(keras)
 
 # Read data
+setwd("C:/Rkeras/Rkeras/")
 data <- read.csv("Cardiotocographic.csv", header = T)
 str(data)
 dim(data)
