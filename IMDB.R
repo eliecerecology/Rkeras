@@ -6,9 +6,15 @@ imdb <- dataset_imdb(num_words = 10000) #10000 more famous words
 str(imdb)
 
 c(c(train_data, train_labels), c(test_data, test_labels)) %<-% imdb
-
-str(train_data[[110]])
+class(train_data)
+train_data[[1]]
 train_labels[[4]]
+train_labels[[4]]o
+length(train_data)
+length(train_labels)
+length(train_data[[2]])
+
+
 
 ###DECODE
 # word_index is a dictionary mapping words to an integer index
@@ -27,8 +33,8 @@ decoded_review <- sapply(train_data[[100]], function(index) {
 })
 cat(decoded_review)
 
-
-
+train_labels[[1]]
+train_labels
 
 
 

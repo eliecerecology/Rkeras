@@ -5,25 +5,23 @@ x_train <- mnist$train$x
 y_train <- mnist$train$y
 x_test <- mnist$test$x
 y_test <- mnist$test$y
-
+TEST <- mnist$test$y
 ###############################
 ##shape (images,width,height)
 ###############################
 
 dim(x_train) #60000 images, of 28 and 28
              #nrow = 60000
-
-dim(x_test)
-
 dim(y_train)
+
+
+class(x_test)
 dim(y_test)
-
-dim(x_train)
-dim(y_train)
 
 # reshape
 x_train <- array_reshape(x_train, c(nrow(x_train), 784))
 x_test <- array_reshape(x_test, c(nrow(x_test), 784))
+
 # rescale
 x_train <- x_train / 255
 x_test <- x_test / 255
@@ -32,11 +30,15 @@ x_test <- x_test / 255
 y_train <- to_categorical(y_train, 10)
 y_test <- to_categorical(y_test, 10)
 
+dim(x_train)
+class(x_train) #<---matrix
 dim(y_train)
+class(y_train) #<---matrix
 
-
-
+###############################
 #model
+###############################
+
 model <- keras_model_sequential() 
 model %>% 
   layer_dense(units = 256, activation = 'relu', input_shape = c(784)) %>% 
@@ -61,11 +63,50 @@ history <- model %>% fit(
 )
 
 plot(history)
-model %>% evaluate(x_test, y_test)
+metrics <- model %>% 
+             evaluate(x_test, y_test, verbose = 0)
+metrics # <- 98% wow
 
-###PREDICT CLASSES
+##################################################
+# PREDICTIONS
+##################################################
+
+#PREDICT CLASSES
 pred <- model %>% predict_classes(x_test)
-pred - y_test
+pred
+
+results <- cbind(TEST, pred)
+edit(results)
+
+
+# Prediction & confusion matrix - test data
+prob <- model %>%
+         predict_proba(x_test)
+
+pred <- model %>%
+         predict_classes(x_test)
+
+table1 <- table(Predicted = pred, Actual = TEST)
+
+cbind(prob, pred, testtarget)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ####model 2 using ELU
 #model
 model2 <- keras_model_sequential() 
@@ -92,7 +133,7 @@ history2 <- model2 %>% fit(
   view_metrics = FALSE
 )
 
-plot(history2)
+plot(history)
 
 model2 %>% evaluate(x_test, y_test)
 
