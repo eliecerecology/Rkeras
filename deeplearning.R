@@ -20,6 +20,12 @@ data[,1:21] <- normalize(data[,1:21])
 data[,22] <- as.numeric(data[,22]) - 1 #values 0 1 2
 summary(data)
 
+
+
+
+
+
+
 ######################
 # Data partition
 ######################
