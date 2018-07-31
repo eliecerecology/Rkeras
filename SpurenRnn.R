@@ -15,6 +15,7 @@ library(readr)
 data_dir <- "~/jena_climate"
 fname <- file.path(data_dir, "jena_climate_2009_2016.csv")
 data <- read_csv(fname)
+class(data)
 
 glimpse(data)
 dim(data)
@@ -24,7 +25,7 @@ colnames(data)
 library(ggplot2)
 ggplot(data, aes(x = 1:nrow(data), y = `T (degC)`)) + geom_line()
 
-data <- data.matrix(data[,-1])
+data <- data.matrix(data[,-1]) #eliminate first column
 
 #NORMALIZATION
 dim(data)
@@ -65,7 +66,7 @@ generator <- function(data,
       if (i + batch_size >= max_index)
         i <<- min_index + lookback
       rows <- c(i:min(i+batch_size, max_index))
-      i <<- i + length(rows)
+      i <- i + length(rows)
     }
     
     samples <- array(0, dim = c(length(rows), 
@@ -76,8 +77,8 @@ generator <- function(data,
     for (j in 1:length(rows)) {
       indices <- seq(rows[[j]] - lookback, rows[[j]], 
                      length.out = dim(samples)[[2]])
-      samples[j,,] <<- data[indices,]
-      targets[[j]] <<- data[rows[[j]] + delay,2]
+      samples[j,,] <- data[indices,]
+      targets[[j]] <- data[rows[[j]] + delay,2]
     }            
     
     list(samples, targets)
@@ -103,11 +104,10 @@ train_gen <- generator(
   step = step, 
   batch_size = batch_size
 )
-
-dim(data) # # 420551     14
+dim(samples)
+plot(targets)
 
 val_gen = generator(
-
   data,
   lookback = lookback,
   delay = delay,
@@ -116,6 +116,7 @@ val_gen = generator(
   step = step,
   batch_size = batch_size
 )
+val_gen
 
 test_gen <- generator(
   data,
@@ -153,8 +154,7 @@ evaluate_naive_method <- function() {
 library(keras)
 
 model <- keras_model_sequential() %>% 
-  layer_flatten(input_shape = c(lookback / step, dim(data)[-1])) %>% 
-  layer_dense(units = 32, activation = "relu") %>% 
+  layer_gru(units = 32, input_shape = list(NULL, dim(data)[[-1]])) %>% 
   layer_dense(units = 1)
 
 model %>% compile(
@@ -169,3 +169,11 @@ history <- model %>% fit_generator(
   validation_data = val_gen,
   validation_steps = val_steps
 )
+
+plot(history)
+
+metrics <- model %>%
+  evaluate(test_gen, verbose = 0)
+
+metrics # <- 0.18 wow!
+pred2 <- model %>% predict(test_gen) 
