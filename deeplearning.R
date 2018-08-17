@@ -8,7 +8,7 @@ setwd("C:/Rkeras/Rkeras/")
 data <- read.csv("Cardiotocographic.csv", header = T)
 str(data)
 dim(data)
-edit(data)
+View(data)
 
 #######################
 # Change to matrix
@@ -33,8 +33,9 @@ summary(data)
 set.seed(1234)
 ind <- sample(2, nrow(data), replace = T, prob = c(0.7, 0.3))
 
-training <- data[ind==1, 1:21]
-test <- data[ind==2, 1:21]
+training <- data[ind == 1, 1:21]
+ncol(training)
+test <- data[ind == 2, 1:21]
 dim(training)
 (1523/100)*80
 
@@ -49,15 +50,17 @@ print(testLabels)
 print(trainLabels)
 
 # Create sequential model
+k_clear_session()
 model <- keras_model_sequential()
 model %>%
-         layer_dense(units = 50, activation = 'relu', input_shape = c(21)) %>%
-         layer_dense(units = 3, activation = "sigmoid") #softmax
+         layer_dense(units = 50, activation = 'relu', input_shape = ncol(training)) %>%
+         layer_dense(units = 3, activation = "softmax") #softmax
 summary(model)
 
 ##############################################
 input * nodes + nodes
-
+ncol(training) * 50 + 50 # layer 1
+50 * 3 + 3               # layer 2
 #Param layer 1 ==> 21 * 50  1 layers
 #21*50 + 50 = 1100
 ##############################################
@@ -65,26 +68,49 @@ input * nodes + nodes
 #(50 * 3) + 3 # ==> 153
 ##############################################
 
-
-
-
 ####################
 # Compile
 ###################
-
 model %>%
          compile(loss = "categorical_crossentropy",
-                 optimizer = "adam",
+                 #optimizer = "adam", # optimizer_rmsprop()
+                 optimizer = optimizer_rmsprop(lr = 0.0001),
                  metrics = "accuracy")
 
 # Fit model
-history <- model %>%
+history0 <- model %>%
          fit(training,
              trainLabels,
              epoch = 200,
              batch_size = 32,
              validation_split = 0.2)
-plot(history)
+
+history1 <- model %>%
+         fit(training,
+             trainLabels,
+             epoch = 200,
+             batch_size = 32,
+             validation_split = 0.2)
+history2 <- model %>%
+         fit(training,
+             trainLabels,
+             epoch = 200,
+             batch_size = 32,
+             validation_split = 0.2)
+
+history3 <- model %>%
+         fit(training,
+             trainLabels,
+             epoch = 200,
+             batch_size = 32,
+             validation_split = 0.2)
+plot(history0)
+dev.new()
+plot(history1)
+dev.new()
+plot(history2)
+dev.new()
+plot(history3)
 #validation increments respect to training for loss: overfitting
  
 # Evaluate model with test data
