@@ -1,5 +1,6 @@
 rm(list=ls(all=TRUE))
 library(keras)
+
 mnist <- dataset_mnist()
 x_train <- mnist$train$x
 y_train <- mnist$train$y
