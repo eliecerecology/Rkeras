@@ -1,18 +1,19 @@
-'''dir.create("~/jena_climate", recursive = TRUE)
+rm(list=ls(all=TRUE))
+'''
+dir.create("C:/jena_climate", recursive = TRUE)
 download.file(
   "https://s3.amazonaws.com/keras-datasets/jena_climate_2009_2016.csv.zip",
-  "~/jena_climate/jena_climate_2009_2016.csv.zip"
+  "C:/jena_climate/jena_climate_2009_2016.csv.zip"
 )
 unzip(
-  "~/jena_climate/jena_climate_2009_2016.csv.zip",
-  exdir = "~/jena_climate"
-)'''
-
-rm(list=ls(all=TRUE))
+  "C:/jena_climate/jena_climate_2009_2016.csv.zip",
+  exdir = "C:/jena_climate"
+)
+'''
 library(tibble)
 library(readr)
 
-data_dir <- "~/jena_climate"
+data_dir <- "C:/jena_climate"
 fname <- file.path(data_dir, "jena_climate_2009_2016.csv")
 data <- read_csv(fname)
 class(data)
@@ -28,13 +29,12 @@ ggplot(data, aes(x = 1:nrow(data), y = `T (degC)`)) + geom_line()
 data <- data.matrix(data[,-1]) #eliminate first column
 
 #NORMALIZATION
-dim(data)
 train_data <- data[1:200000,]
+
 mean <- apply(train_data, 2, mean)
 std <- apply(train_data, 2, sd)
 data <- scale(data, center = mean, scale = std)
 
-head(data)
 
 ############################
 # THE GENERATOR
@@ -55,7 +55,7 @@ generator <- function(data,
                       min_index,
                       max_index,
                       shuffle = FALSE,
-                      batch_size = 128, step = 6) {
+                      batch_size = 128, step = 6) { #6 because it draws one data point every hour!
   if (is.null(max_index))
     max_index <- nrow(data) - delay - 1
   i <- min_index + lookback
@@ -104,8 +104,6 @@ train_gen <- generator(
   step = step, 
   batch_size = batch_size
 )
-dim(samples)
-plot(targets)
 
 val_gen = generator(
   data,
@@ -116,18 +114,17 @@ val_gen = generator(
   step = step,
   batch_size = batch_size
 )
-val_gen
 
 test_gen <- generator(
   data,
   lookback = lookback,
-  delay = delay,
+  delay = delay, #the target prediction eg. 24 hours
   min_index = 300001,
   max_index = NULL,
   step = step,
   batch_size = batch_size
 )
-
+dim(data)
 # This is how many steps to draw from `val_gen`
 # in order to see the whole validation set:
 val_steps <- (300000 - 200001 - lookback) / batch_size
@@ -138,7 +135,6 @@ test_steps <- (nrow(data) - 300001 - lookback) / batch_size
 
 
 #mean(abs(preds - targets))
-
 evaluate_naive_method <- function() {
   batch_maes <- c()
   for (step in 1:val_steps) {
@@ -150,11 +146,10 @@ evaluate_naive_method <- function() {
   print(mean(batch_maes))
 }
 
-
 library(keras)
 
 model <- keras_model_sequential() %>% 
-  layer_gru(units = 32, input_shape = list(NULL, dim(data)[[-1]])) %>% 
+  layer_gru(units = 32, input_shape = list(NULL, dim(data)[[-1]])) %>% #Here I should use train 
   layer_dense(units = 1)
 
 model %>% compile(
